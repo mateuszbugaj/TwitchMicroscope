@@ -10,7 +10,7 @@
 #define COLOR_ORDER GRB
 CRGB bedLeds[NUM_BED_LEDS];
 CRGB topLeds[NUM_TOP_LEDS];
-int brightness = 100;
+int brightness = 255;
 String command = "";
 
 bool isTopOn = false;
