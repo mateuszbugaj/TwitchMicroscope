@@ -1,0 +1,60 @@
+# Arduino Echo
+name: Echo
+portName: ttyUSB1
+portBaudRate: 9600
+initialState: "Start"
+
+commands:
+  - name: "Send message"
+    description: "Send message and receive the same message."
+    prefix: "send"
+    devicePrefix: ""
+    params:
+      - name: "Message"
+        type: String
+        optional: false
+  - name: "Home the device"
+    description: "Home the device to the position 1"
+    requiredStates: []
+    resultingState: "p1"
+    prefix: "home"
+    devicePrefix: ""
+    events: [
+      "home"
+    ]
+  - name: "Move from p1 to p2"
+    description: ""
+    requiredStates: [ "p1" ]
+    resultingState: "p2"
+    prefix: "1to2"
+    devicePrefix: ""
+    events: [
+      "1to2"
+    ]
+  - name: "Move from p2 to p3"
+    description: ""
+    requiredStates: [ "p2" ]
+    resultingState: "p3"
+    prefix: "2to3"
+    devicePrefix: ""
+    events: [
+      "2to3"
+    ]
+  - name: "Move from p3 to p2"
+    description: ""
+    requiredStates: [ "p3" ]
+    resultingState: "p2"
+    prefix: "3to2"
+    devicePrefix: ""
+    events: [
+      "3to2"
+    ]
+  - name: "Move from p2 to p1"
+    description: ""
+    requiredStates: [ "p2" ]
+    resultingState: "p1"
+    prefix: "2to1"
+    devicePrefix: ""
+    events: [
+      "2to1"
+    ]

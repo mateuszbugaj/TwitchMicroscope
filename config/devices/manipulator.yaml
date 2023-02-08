@@ -1,0 +1,112 @@
+# Device 1
+name: 'Manipulator'
+portName: ttyUSB1
+portBaudRate: 9600
+initialState: "Start"
+cameras:
+  - name: "Effector_View"
+    portName: "/dev/video0"
+  - name: "Wide_Shot"
+    portName: "/dev/video2"
+  - name: "Microscope_View"
+    portName: "/dev/video4"
+
+commands:
+  - name: "Home"
+    description: "Home the manipulator in all axes."
+    requiredStates: ["Start", "home"]
+    resultingState: "home"
+    prefix: "home"
+    devicePrefix: "G28"
+  - name: "Move Relative"
+    description: "Move device by distance of millimeters."
+    prefix: "moveBy"
+    devicePrefix: "G0"
+    params:
+      - name: "XAxisDistance"
+        type: Integer
+        range: [-100, 100]
+      - name: "YAxisDistance"
+        type: Integer
+        range: [-100, 100]
+        optional: true
+        predefined: 0
+      - name: "ZAxisDistance"
+        type: Integer
+        range: [-100, 100]
+        optional: true
+        predefined: 0
+
+  - name: "Grab the microscope"
+    description: "Grab the microscope"
+    requiredStates: [ "home", "grab_sample_1" ]
+    resultingState: "microscope_grabbed"
+    prefix: "grab_micro"
+    events: [
+              "G90",
+              "G0 posX -100 0",
+              "M2 100",
+              "G0 240 -145 0",
+              "M2 30",
+              "G0 240 -145 10",
+              "G0 240 -50 10",
+              "G0 0 -50 0",
+              "G91"
+    ]
+  - name: "Put away the microscope"
+    description: "Put away the microscope"
+    requiredStates: [ "microscope_grabbed" ]
+    resultingState: "home"
+    prefix: "deposit_micro"
+    events: [
+      "G90",
+      "G0 240 -50 10",
+      "G0 240 -145 10",
+      "G0 240 -145 0",
+      "M2 100",
+      "G0 240 -100 0",
+      "G0 0 0 0",
+      "G91"
+    ]
+  - name: "Grab sample 1"
+    description: "Place sample 1 into the work area"
+    requiredStates: [ "home" ]
+    resultingState: "grab_sample_1"
+    prefix: "grab_sample_1"
+    #83 -200 -15
+    #0 0 -35
+    events: [
+      "G90",
+      "G0 83 -100 0",
+      "G0 83 -200 0",
+      "M2 100",
+      "G0 83 -200 -15",
+      "M2 30",
+      "G0 83 -200 0",
+      "G0 0 0 0",
+      "G0 0 0 -35",
+      "M2 100",
+      "G0 0 0 0",
+      "G91"
+    ]
+  - name: "Put away sample 1"
+    description: "Put away sample 1"
+    requiredStates: [ "grab_sample_1", "grabbed_micro", "home" ]
+    resultingState: "home"
+    prefix: "deposit_sample_1"
+    events: [
+      "G90",
+      "G0 0 0 0",
+      "M2 100",
+      "G0 0 0 -35",
+      "M2 30",
+      "G0 0 0 0",
+      "G0 83 -100 0",
+      "G0 83 -200 0",
+      "G0 83 -200 -15",
+      "M2 100",
+      "G0 83 -200 0",
+      "G0 83 -100 0",
+      "G0 0 0 0",
+      "G91"
+    ]
