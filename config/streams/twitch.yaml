@@ -1,4 +1,0 @@
-#twitch
-service: twitch
-name: <userName>
-token: <token>
