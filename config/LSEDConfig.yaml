@@ -1,2 +1,2 @@
 deviceConfigDir: ["../config/devices/manipulator.yaml", "../config/devices/microscope.yaml"]
-streamConfigDir: ["../config/streams/twitch.yaml"]
+streamConfigDir: []
