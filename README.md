@@ -10,7 +10,9 @@ make && make flash
 ```
 
 ### Microscope
-Open Microscope/Microscope.ino with Arduino IDE and load.
+```bash
+arduino Microscope/Microscope.ino
+```
 
 ### LSED
 ```bash
