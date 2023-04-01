@@ -1,4 +1,5 @@
 #include <FastLED.h>
+#include <Stepper.h>
 
 #define NUM_BED_LEDS 10
 #define BED_LED_PIN     3
@@ -15,6 +16,26 @@ String command = "";
 
 bool isTopOn = false;
 bool isBedOn = false;
+
+// Stepper motor configuration
+#define STEPS_PER_REV 2048
+#define IN1 8
+#define IN2 9
+#define IN3 10
+#define IN4 11
+Stepper stepper(STEPS_PER_REV, IN1, IN3, IN2, IN4);
+
+// Edge detection switch configuration
+#define SWITCH_PIN 12
+bool switchState = false;
+bool lastSwitchState = false;
+unsigned long lastDebounceTime = 0;
+unsigned long debounceDelay = 50;
+
+// Sample configuration
+#define SAMPLE_DISTANCE 4300 // Number of steps between each sample, adjust for fine-tuning
+#define BACK_ROTATIONS 0.2 // Number of rotations to move back after homing
+int currentSample = 0;
 
 void bedOn(){
   for( int i = 0; i < NUM_BED_LEDS; ++i) {
@@ -49,6 +70,12 @@ void topOff(){
   isTopOn = false;
 }
 
+void moveToSample(int targetSample) {
+  int stepsToMove = (targetSample - currentSample) * SAMPLE_DISTANCE;
+  stepper.step(stepsToMove);
+  currentSample = targetSample;
+}
+
 void setup() {
   Serial.begin(9600);
   Serial.print("Microscope is running.\n\r");
@@ -61,6 +88,22 @@ void setup() {
 
   bedOff();
   topOff();
+
+  stepper.setSpeed(10); // Set motor speed (RPM)
+  pinMode(SWITCH_PIN, INPUT_PULLUP);
+}
+
+void home() {
+  while (digitalRead(SWITCH_PIN) == HIGH) {
+    stepper.step(1);
+    delay(1);
+  }
+
+  // Move back a few rotations after homing
+  int stepsToMoveBack = STEPS_PER_REV * BACK_ROTATIONS;
+  stepper.step(-stepsToMoveBack);
+  
+  currentSample = 5;
 }
 
 void interpret(String command){
@@ -89,7 +132,7 @@ void interpret(String command){
     }
 
     if(command == "lgt top off"){
-      Serial.print("Bed lights off\n\r");
+      Serial.print("Top lights off\n\r");
       topOff();
       return;
     }
@@ -114,6 +157,36 @@ void interpret(String command){
       return;
     }
 
+    
+    // Stepper motor commands
+    if (command == "motor cw") {
+      Serial.print("Stepper motor clockwise\n\r");
+      stepper.step(STEPS_PER_REV);
+      return;
+    }
+
+    if (command == "motor ccw") {
+      Serial.print("Stepper motor counterclockwise\n\r");
+      stepper.step(-STEPS_PER_REV);
+      return;
+    }
+
+    // Stepper motor homing command
+    if (command == "home") {
+      Serial.print("Homing stepper motor\n\r");
+      home();
+      return;
+    }
+
+    if (command.startsWith("sample ")) {
+      int targetSample = command.substring(7).toInt();
+      Serial.print("Moving to sample ");
+      Serial.print(targetSample);
+      Serial.print("\n\r");
+      moveToSample(targetSample);
+      return;
+    }
+
     Serial.print("Got ");
     Serial.print(command);
     Serial.print("\n\r");
@@ -121,12 +194,27 @@ void interpret(String command){
 
 void loop()
 {   
+  // Read and debounce switch state
+  bool reading = digitalRead(SWITCH_PIN);
+
+  if (reading != lastSwitchState) {
+    lastDebounceTime = millis();
+  }
+
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    if (reading != switchState) {
+      switchState = reading;
+    }
+  }
+  
+  lastSwitchState = reading;
+
+  // Process serial commands
   if (Serial.available() > 0) {
     command = Serial.readString();
     command.trim();
 
-
-     interpret(command);
+    interpret(command);
     delay(500);
 
     Serial.print("done\n\r");
