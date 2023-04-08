@@ -1,5 +1,5 @@
 #include <FastLED.h>
-#include <Stepper.h>
+#include <AccelStepper.h>
 
 #define NUM_BED_LEDS 10
 #define BED_LED_PIN     3
@@ -17,13 +17,13 @@ String command = "";
 bool isTopOn = false;
 bool isBedOn = false;
 
-// Stepper motor configuration
+// A4988 stepper motor configuration
+#define DIR_PIN 11
+#define STEP_PIN 10
 #define STEPS_PER_REV 2048
-#define IN1 8
-#define IN2 9
-#define IN3 10
-#define IN4 11
-Stepper stepper(STEPS_PER_REV, IN1, IN3, IN2, IN4);
+
+// AccelStepper motor initialization
+AccelStepper stepper(AccelStepper::DRIVER, STEP_PIN, DIR_PIN);
 
 // Edge detection switch configuration
 #define SWITCH_PIN 12
@@ -33,7 +33,7 @@ unsigned long lastDebounceTime = 0;
 unsigned long debounceDelay = 50;
 
 // Sample configuration
-#define SAMPLE_DISTANCE 4300 // Number of steps between each sample, adjust for fine-tuning
+#define SAMPLE_DISTANCE 420 // Number of steps between each sample, adjust for fine-tuning
 #define BACK_ROTATIONS 0.2 // Number of rotations to move back after homing
 int currentSample = 0;
 
@@ -70,12 +70,6 @@ void topOff(){
   isTopOn = false;
 }
 
-void moveToSample(int targetSample) {
-  int stepsToMove = (targetSample - currentSample) * SAMPLE_DISTANCE;
-  stepper.step(stepsToMove);
-  currentSample = targetSample;
-}
-
 void setup() {
   Serial.begin(9600);
   Serial.print("Microscope is running.\n\r");
@@ -89,20 +83,43 @@ void setup() {
   bedOff();
   topOff();
 
-  stepper.setSpeed(10); // Set motor speed (RPM)
   pinMode(SWITCH_PIN, INPUT_PULLUP);
+
+  // A4988 stepper motor initialization
+  pinMode(DIR_PIN, OUTPUT);
+  pinMode(STEP_PIN, OUTPUT);
+  
+  // AccelStepper configuration
+  stepper.setMaxSpeed(1000);
+  stepper.setAcceleration(500); // Set desired acceleration
+
+  home();
+}
+
+void moveSteps(int steps) {
+  stepper.move(steps);
+  while (stepper.distanceToGo() != 0) {
+    stepper.run();
+  }
+}
+
+void moveToSample(int targetSample) {
+  int stepsToMove = (targetSample - currentSample) * SAMPLE_DISTANCE;
+  moveSteps(-stepsToMove);
+
+  currentSample = targetSample;
 }
 
 void home() {
+  digitalWrite(DIR_PIN, LOW); // Set the direction to home
   while (digitalRead(SWITCH_PIN) == HIGH) {
-    stepper.step(1);
-    delay(1);
+    digitalWrite(STEP_PIN, HIGH);
+    delayMicroseconds(5000);
+    digitalWrite(STEP_PIN, LOW);
+    delayMicroseconds(5000);
   }
-
-  // Move back a few rotations after homing
-  int stepsToMoveBack = STEPS_PER_REV * BACK_ROTATIONS;
-  stepper.step(-stepsToMoveBack);
-  
+  delay(1000);
+  moveSteps(100);
   currentSample = 5;
 }
 
@@ -154,20 +171,6 @@ void interpret(String command){
       }
       
       Serial.print("Light brightness set to " + String(newBrightness) + "\n\r");
-      return;
-    }
-
-    
-    // Stepper motor commands
-    if (command == "motor cw") {
-      Serial.print("Stepper motor clockwise\n\r");
-      stepper.step(STEPS_PER_REV);
-      return;
-    }
-
-    if (command == "motor ccw") {
-      Serial.print("Stepper motor counterclockwise\n\r");
-      stepper.step(-STEPS_PER_REV);
       return;
     }
 
