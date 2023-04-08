@@ -20,7 +20,7 @@ bool isBedOn = false;
 // A4988 stepper motor configuration
 #define DIR_PIN 11
 #define STEP_PIN 10
-#define STEPS_PER_REV 2048
+#define SLEEP_PIN 9
 
 // AccelStepper motor initialization
 AccelStepper stepper(AccelStepper::DRIVER, STEP_PIN, DIR_PIN);
@@ -33,7 +33,7 @@ unsigned long lastDebounceTime = 0;
 unsigned long debounceDelay = 50;
 
 // Sample configuration
-#define SAMPLE_DISTANCE 420 // Number of steps between each sample, adjust for fine-tuning
+#define SAMPLE_DISTANCE 1680 // Number of steps between each sample, adjust for fine-tuning
 #define BACK_ROTATIONS 0.2 // Number of rotations to move back after homing
 int currentSample = 0;
 
@@ -88,19 +88,22 @@ void setup() {
   // A4988 stepper motor initialization
   pinMode(DIR_PIN, OUTPUT);
   pinMode(STEP_PIN, OUTPUT);
+  pinMode(SLEEP_PIN, OUTPUT);
   
   // AccelStepper configuration
-  stepper.setMaxSpeed(1000);
-  stepper.setAcceleration(500); // Set desired acceleration
+  stepper.setMaxSpeed(800);
+  stepper.setAcceleration(600); // Set desired acceleration
 
   home();
 }
 
 void moveSteps(int steps) {
+  digitalWrite(SLEEP_PIN, HIGH);
   stepper.move(steps);
   while (stepper.distanceToGo() != 0) {
     stepper.run();
   }
+  digitalWrite(SLEEP_PIN, LOW);
 }
 
 void moveToSample(int targetSample) {
@@ -112,13 +115,15 @@ void moveToSample(int targetSample) {
 
 void home() {
   digitalWrite(DIR_PIN, LOW); // Set the direction to home
+  digitalWrite(SLEEP_PIN, HIGH);
   while (digitalRead(SWITCH_PIN) == HIGH) {
     digitalWrite(STEP_PIN, HIGH);
-    delayMicroseconds(5000);
+    delayMicroseconds(1000);
     digitalWrite(STEP_PIN, LOW);
-    delayMicroseconds(5000);
+    delayMicroseconds(1000);
   }
-  delay(1000);
+  digitalWrite(SLEEP_PIN, LOW);
+  delay(500);
   moveSteps(100);
   currentSample = 5;
 }

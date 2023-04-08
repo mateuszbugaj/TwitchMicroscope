@@ -22,3 +22,11 @@ commands:
         type: String
         values: [ "on", "off" ]
     devicePrefix: "lgt top"
+  - name: "Select sample"
+    description: "Move sample selector to one of 5 possible positions"
+    prefix: "sample"
+    params:
+      - name: "sample number"
+        type: Integer
+        range: [1, 5]
+    devicePrefix: "sample"
