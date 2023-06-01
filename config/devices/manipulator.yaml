@@ -1,8 +1,10 @@
 # Device 1
 name: 'Manipulator'
-portName: ttyUSB1
+portName: ttyUSB0
 portBaudRate: 9600
 initialState: "Start"
+confirmation: "OK"
+
 cameras:
   - name: "Effector_View"
     portName: "/dev/video0"
@@ -17,11 +19,11 @@ commands:
     requiredStates: ["Start", "home"]
     resultingState: "home"
     prefix: "home"
-    devicePrefix: "G28"
+    output: "G28"
   - name: "Move Relative"
     description: "Move device by distance of millimeters."
     prefix: "moveBy"
-    devicePrefix: "G0"
+    output: "G0 $XAxisDistance $YAxisDistance $ZAxisDistance"
     params:
       - name: "XAxisDistance"
         type: Integer
@@ -36,6 +38,41 @@ commands:
         range: [-100, 100]
         optional: true
         predefined: 0
+  - name: "Move Left"
+    description: "Move device to the left by distance of millimeters."
+    prefix: "l"
+    output: "G0 -$XAxisDistance 0 0"
+    params:
+      - name: "XAxisDistance"
+        type: Integer
+        range: [0, 100]
+
+  - name: "Move Right"
+    description: "Move device to the right by distance of millimeters."
+    prefix: "r"
+    output: "G0 $XAxisDistance 0 0"
+    params:
+      - name: "XAxisDistance"
+        type: Integer
+        range: [0, 100]
+
+  - name: "Move Up"
+    description: "Move device up by distance of millimeters."
+    prefix: "u"
+    output: "G0 0 $YAxisDistance 0"
+    params:
+      - name: "YAxisDistance"
+        type: Integer
+        range: [0, 100]
+
+  - name: "Move Down"
+    description: "Move device down by distance of millimeters."
+    prefix: "d"
+    output: "G0 0 -$YAxisDistance 0"
+    params:
+      - name: "YAxisDistance"
+        type: Integer
+        range: [0, 100]
 
   - name: "Grab the microscope"
     description: "Grab the microscope"

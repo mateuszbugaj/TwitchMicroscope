@@ -1,7 +1,8 @@
 # Microscope
 name: Microscope
-portName: ttyUSB0
+portName: ttyUSB1
 portBaudRate: 9600
+confirmation: "DONE"
 cameras:
   - name: "Main View"
     portName: "/dev/video4"
@@ -13,7 +14,7 @@ commands:
       - name: "State"
         type: String
         values: [ "on", "off" ]
-    devicePrefix: "lgt bed"
+    output: "lgt bed $State"
   - name: "Top Light Switch"
     description: "Switch top light ON and OFF."
     prefix: "topLight"
@@ -21,12 +22,12 @@ commands:
       - name: "State"
         type: String
         values: [ "on", "off" ]
-    devicePrefix: "lgt top"
+    output: "lgt top $State"
   - name: "Select sample"
     description: "Move sample selector to one of 5 possible positions"
     prefix: "sample"
     params:
-      - name: "sample number"
+      - name: "sample_number"
         type: Integer
         range: [1, 5]
-    devicePrefix: "sample"
+    output: "sample $sample_number"
