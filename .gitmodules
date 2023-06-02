@@ -1,6 +1,6 @@
-[submodule "CartesianRobot"]
-	path = CartesianRobot
-	url = git@github.com:mateuszbugaj/CartesianRobot.git
 [submodule "LSEDRepo"]
 	path = LSED
 	url = git@github.com:mateuszbugaj/LSED.git
+[submodule "CartesianManipulator"]
+	path = CartesianManipulator
+	url = git@github.com:mateuszbugaj/CartesianManipulator.git
