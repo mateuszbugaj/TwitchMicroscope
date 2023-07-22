@@ -30,12 +30,19 @@ AccelStepper stepper(AccelStepper::DRIVER, STEP_PIN, DIR_PIN);
 bool switchState = false;
 bool lastSwitchState = false;
 unsigned long lastDebounceTime = 0;
-unsigned long debounceDelay = 50;
+unsigned long debounceDelay = 20;
 
 // Sample configuration
 #define SAMPLE_DISTANCE 1680 // Number of steps between each sample, adjust for fine-tuning
 #define BACK_ROTATIONS 0.2 // Number of rotations to move back after homing
 int currentSample = 0;
+
+#define SAMPLE_SWITCH_PIN 8
+#define SAMPLE_SWITCH_STATE_INDICATOR 7
+bool sampleButtonPressed = LOW;
+unsigned long lastPressed = 0; // Timestamp
+bool sampleButtonClickSeen = false;
+bool sampleSwitchState = true;
 
 void bedOn(){
   for( int i = 0; i < NUM_BED_LEDS; ++i) {
@@ -84,6 +91,8 @@ void setup() {
   topOff();
 
   pinMode(SWITCH_PIN, INPUT_PULLUP);
+  pinMode(SAMPLE_SWITCH_PIN, INPUT_PULLUP);
+  pinMode(SAMPLE_SWITCH_STATE_INDICATOR, OUTPUT);
 
   // A4988 stepper motor initialization
   pinMode(DIR_PIN, OUTPUT);
@@ -106,11 +115,37 @@ void moveSteps(int steps) {
   digitalWrite(SLEEP_PIN, LOW);
 }
 
-void moveToSample(int targetSample) {
-  int stepsToMove = (targetSample - currentSample) * SAMPLE_DISTANCE;
-  moveSteps(-stepsToMove);
+void checkSampleSwitch(){
+  int reading = digitalRead(SAMPLE_SWITCH_PIN);
 
-  currentSample = targetSample;
+  if(sampleButtonPressed == false && reading == 0){
+    sampleButtonPressed = true;
+    lastPressed = millis();
+  }
+
+  if(reading == 1){
+    sampleButtonPressed = false;
+    sampleButtonClickSeen = false;
+  }
+
+  if(millis() - lastPressed > debounceDelay && sampleButtonPressed == true){
+    if(sampleButtonClickSeen == false){
+      sampleSwitchState = !sampleSwitchState;
+      sampleButtonClickSeen = true;
+      Serial.println(sampleSwitchState);
+    }
+  }
+}
+
+
+void moveToSample(int targetSample) {
+  if(sampleSwitchState == true) { 
+    int stepsToMove = (targetSample - currentSample) * SAMPLE_DISTANCE;
+    moveSteps(-stepsToMove);
+    currentSample = targetSample;
+  } else {
+    Serial.println("Sample switch not activated!");
+  }
 }
 
 void home() {
@@ -216,6 +251,14 @@ void loop()
   }
   
   lastSwitchState = reading;
+
+  checkSampleSwitch();
+
+  if(sampleSwitchState){
+    digitalWrite(SAMPLE_SWITCH_STATE_INDICATOR, LOW);
+  } else {
+    digitalWrite(SAMPLE_SWITCH_STATE_INDICATOR, HIGH);
+  }
 
   // Process serial commands
   if (Serial.available() > 0) {
