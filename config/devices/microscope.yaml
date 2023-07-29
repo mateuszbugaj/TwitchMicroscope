@@ -2,7 +2,7 @@
 name: Microscope
 portName: ttyUSB1
 portBaudRate: 9600
-confirmation: "DONE"
+confirmation: "done"
 cameras:
   - name: "Main View"
     portName: "/dev/video4"
