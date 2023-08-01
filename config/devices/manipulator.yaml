@@ -38,6 +38,7 @@ commands:
         range: [-100, 100]
         optional: true
         predefined: 0
+
   - name: "Move Left"
     description: "Move device to the left by distance of millimeters."
     prefix: "l"
@@ -74,62 +75,24 @@ commands:
         type: Integer
         range: [0, 100]
 
-  - name: "Test Scenario"
-    description: "Demo showcasing scenarios"
-    requiredStates: [ "home", "start" ]
-    resultingState: [ "home" ]
-    prefix: "test"
-    vars: {
-      X1: "50",
-      X2: "0"
-    }
-    events: [
-      "LIMITX 100",
-      "G91",
-      "G0 $X1 0 0",
-      "G0 $X2 0 0",
-      "G90",
-      "LIMITX 100"
-    ]
-  # - name: "Sponges Scenario"
-  #   description: "Demo showcasing gripper capability by moving sponges around"
-  #   requiredStates: [ "home" ]
-  #   resultingState: [ "home" ]
-  #   prefix: "sponges"
-  #   vars: {
-  #     X1: "-140",
-  #     X2: "0",
-  #     X3: "50",
-  #     Y1: "80",
-  #     Y2: "30",
-  #     Y3: "-40",
-  #     Y4: "-110",
-  #     Z1: "-20",
-  #     Z2: "0",
-  #     Z3: "20",
-  #     Z4: "30",
-  #     GRIPPER1: "70",
-  #     GRIPPER2: "100"
-  #   }
-  #   events: [
-  #     "G91",
-  #     "LIMITX 200",
-  #     "LIMITY 200",
-  #     "LIMITZ 100",
-  #     "G0 $X1 $Y1 0",
-  #     "G0 $X1 $Y2 $Z1",
-  #     "M $GRIPPER1", # Grab the first sponge
-  #     "G0 $X1 $Y2 $Z2",
-  #     "G0 $X2 $Y3 $Z3",
-  #     "G0 $X2 $Y4 $Z4",
-  #     "G0 $X2 $Y4 $Z3",
-  #     "M $GRIPPER2", # Deposit the first sponge
-  #     "G0 $X2 $Y3 $Z2",
-  #     "G0 $X1 $Y3 $Z1",
-  #     "G0 $X1 $Y4 $Z1",
-  #     "M $GRIPPER1", # Grab the second sponge
-  #     "G0 $X1 $Y2 $Z3"
-  #   ]
+  - name: "Zoom in"
+    description: "Move effector closer to the table by distance of millimeters."
+    prefix: "+"
+    output: "G0 0 0 -$ZAxisDistance"
+    params:
+      - name: "ZAxisDistance"
+        type: Integer
+        range: [0, 100]
+
+  - name: "Zoom out"
+    description: "Move effector further from the table by distance of millimeters."
+    prefix: "-"
+    output: "G0 0 0 $ZAxisDistance"
+    params:
+      - name: "ZAxisDistance"
+        type: Integer
+        range: [0, 100]
+
   - name: "Grab the microscope"
     description: "Grab the microscope"
     requiredStates: [ "sample_grabbed" ]
@@ -163,12 +126,15 @@ commands:
               "G0 $X1 $Y2 $Z3",
               "F 100",
               "G0 $X2 $Y4 $Z3", # Go above bed lights
+              "F 20",
               "G0 $X2 $Y4 $Z4",  # Zoom in with microscope
-              "LIMITX -62 -58",
-              "LIMITY 48 52",
-              "LIMITZ 21 22",
+              "F 1",
+              "LIMITX -65 -55",
+              "LIMITY 45 55",
+              "LIMITZ 20 23",
               "G90"
     ]
+
   - name: "Put away the microscope"
     description: "Put away the microscope"
     requiredStates: [ "microscope_grabbed" ]
@@ -193,6 +159,7 @@ commands:
               "LIMITX 200",
               "LIMITY 200",
               "LIMITZ 100",
+              "F 100",
               "G0 $X1 $Y1 $Z1",
               "G0 $X2 $Y2 $Z1", # Go in front of the microscope stand
               "G0 $X2 $Y3 $Z1",
@@ -207,6 +174,7 @@ commands:
               "LIMITZ 5",
               "G90"
     ]
+
   - name: "Grab sample"
     description: "Place sample into the work area"
     requiredStates: [ "home" ]
@@ -240,12 +208,12 @@ commands:
               "M 100",
               "F 30",
               "G0 $X1 $Y2 $Z1",
+              "F 100",
               "G0 $X1 $Y2 $Z2",
               "M 50",
               "M 30",
               "G0 $X1 $Y2 $Z1",
               "G0 $X1 $Y3 $Z1",
-              "F 100",
               "G0 $X2 $Y4 $Z1",
               "G0 $X2 $Y4 $Z3",
               "M 100",
@@ -256,6 +224,7 @@ commands:
               "LIMITZ 5",
               "G90"
     ]
+
   - name: "Deposit sample"
     description: "Deposit sample back into the sample selector"
     requiredStates: [ "sample_grabbed" ]
@@ -287,11 +256,11 @@ commands:
               "G0 $X2 $Y2 $Z1",
               "F 30",
               "G0 $X2 $Y3 0",
+              "F 100",
               "G0 $X2 $Y3 -20",
               "M 100",
               "G0 $X2 $Y3 0",
               "G0 $X2 $Y4 -5",
-              "F 100",
               "G0 $X3 $Y4 -5",
               "F 30",
               "G0 $X4 $Y4 -5",

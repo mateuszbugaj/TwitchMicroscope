@@ -2,7 +2,7 @@ userDatabaseDir: "userDatabase.json"
 chatLogDir: "chatLog/"
 
 adminUsers:
-  - "boogieman002"
+  - "user123"
 
 deviceConfigDir:
   - "../config/devices/manipulator.yaml"
