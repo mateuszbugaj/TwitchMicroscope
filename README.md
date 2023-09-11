@@ -1,20 +1,22 @@
 # TwitchMicroscope
 
-This repository uses LSED and CartesianRobot submodules to, among others, control a microscope via Twitch.
+This repository uses [LSED](https://github.com/mateuszbugaj/LSED) and [CartesianRobot](https://github.com/mateuszbugaj/CartesianManipulator) submodules to control a microscope via Twitch chat. </br>
+
+This is an example usecase or practical demonstration for the LSED system.
+Configuration files at `config/devices/` specify how devices (Manipulator and Microscope) should be percived by the system and what capabilities viewers can use. 
+
+![df](LSEDDemo.gif)
 
 ## Build and run
-### Cartesian manipulator
-```bash
-cd CartesianRobot
-make && make flash
-```
+To build it, load the CartesianManipulator firmware as specified in `CartesianManipulator/README.md`. </br>
+Next, load the Microscope code onto the Arduino. It is also responsible for the sample selector and lighting.
 
-### Microscope
 ```bash
 arduino Microscope/Microscope.ino
 ```
 
-### LSED
+Finally, change to the `LSED/` directory and use Maven to run the LSED system using provided configuration files.
+
 ```bash
 cd LSED
 mvn javafx:run -Djavafx.args="../config/LSEDConfig.yaml"
