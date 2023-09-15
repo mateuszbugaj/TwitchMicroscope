@@ -5,6 +5,8 @@ This repository uses [LSED](https://github.com/mateuszbugaj/LSED) and [Cartesian
 This is an example usecase or practical demonstration for the LSED system.
 Configuration files at `config/devices/` specify how devices (Manipulator and Microscope) should be percived by the system and what capabilities viewers can use. 
 
+Demo of the TwitchMicroscope system: [LSEDDemo.gif](LSEDDemo.gif)
+
 ![df](LSEDDemo.gif)
 
 ## Build and run
